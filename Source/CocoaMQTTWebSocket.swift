@@ -10,7 +10,7 @@ import Starscream
 #if IS_SWIFT_PACKAGE
 import CocoaMQTT
 #endif
-
+//shiyan
 // MARK: - Interfaces
 
 public protocol CocoaMQTTWebSocketConnectionDelegate: AnyObject {
