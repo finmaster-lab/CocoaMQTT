@@ -138,9 +138,13 @@ public class CocoaMQTTWebSocket: CocoaMQTTSocketProtocol {
                 if let error = possibleError {
                     self.closeConnection(withError: error)
                 } else {
-                    guard self.scheduledWrites.remove(newWrite) != nil else { return }
-                    guard let delegate = self.delegate else { return }
-                    delegate.socket(self, didWriteDataWithTag: tag)
+                    do {
+                        guard self.scheduledWrites.remove(newWrite) != nil else { return }
+                        guard let delegate = self.delegate else { return }
+                        delegate.socket(self, didWriteDataWithTag: tag)
+                    }catch {
+                        
+                    }
                 }
             }
         }
