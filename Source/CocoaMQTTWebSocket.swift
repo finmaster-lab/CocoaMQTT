@@ -11,7 +11,6 @@ import Starscream
 #if IS_SWIFT_PACKAGE
 import CocoaMQTT
 #endif
-//shiyan
 // MARK: - Interfaces
 
 public protocol CocoaMQTTWebSocketConnectionDelegate: AnyObject {
@@ -43,7 +42,7 @@ public protocol CocoaMQTTWebSocketConnection: NSObjectProtocol {
 public protocol CocoaMQTTWebSocketConnectionBuilder {
     
     func buildConnection(forURL url: URL, withHeaders headers: [String: String]) throws -> CocoaMQTTWebSocketConnection
-
+    
 }
 
 // MARK: - CocoaMQTTWebSocket
@@ -51,11 +50,11 @@ public protocol CocoaMQTTWebSocketConnectionBuilder {
 public class CocoaMQTTWebSocket: CocoaMQTTSocketProtocol {
     
     public var enableSSL = false
-
+    
     public var shouldConnectWithURIOnly = false
     
     public var headers: [String: String] = [:]
-
+    
     public typealias ConnectionBuilder = CocoaMQTTWebSocketConnectionBuilder
     
     public struct DefaultConnectionBuilder: ConnectionBuilder {
@@ -94,9 +93,9 @@ public class CocoaMQTTWebSocket: CocoaMQTTSocketProtocol {
     }
     
     public func connect(toHost host: String, onPort port: UInt16, withTimeout timeout: TimeInterval) throws {
-
+        
         var urlStr = ""
-
+        
         if shouldConnectWithURIOnly {
             urlStr = "\(uri)"
         } else {
@@ -131,30 +130,32 @@ public class CocoaMQTTWebSocket: CocoaMQTTSocketProtocol {
     }
     
     public func write(_ data: Data, withTimeout timeout: TimeInterval, tag: Int) {
-        internalQueue.async {
-            let newWrite = WriteItem(tag: tag, timeout: (timeout > 0.0) ? .now() + timeout : .distantFuture)
-            self.scheduledWrites.insert(newWrite)
-            self.checkScheduledWrites()
-            self.connection?.write(data: data) { possibleError in
-                if let error = possibleError {
-                    self.closeConnection(withError: error)
-                } else {
-                    do {
-                        guard self.scheduledWrites.remove(newWrite) != nil else { return }
+        internalQueue.async (flags: .barrier){
+                let newWrite = WriteItem(tag: tag, timeout: (timeout > 0.0) ? .now() + timeout : .distantFuture)
+               if(newWrite.tag <= self.scheduledWrites.count){
+                   self.scheduledWrites.insert(newWrite)
+               }
+                self.checkScheduledWrites()
+                self.connection?.write(data: data) { possibleError in
+                    if let error = possibleError {
+                        self.closeConnection(withError: error)
+                    } else {
+                        if (self.scheduledWrites.contains(newWrite)){
+                            guard self.scheduledWrites.remove(newWrite) != nil else { return }
+                        }
                         guard let delegate = self.delegate else { return }
                         delegate.socket(self, didWriteDataWithTag: tag)
-                    }catch {
-                        
                     }
                 }
-            }
+          
+            
         }
     }
     
     internal var delegate: CocoaMQTTSocketDelegate?
     internal var delegateQueue: DispatchQueue?
     internal var internalQueue = DispatchQueue(label: "CocoaMQTTWebSocket")
- 
+    
     private var connection: CocoaMQTTWebSocketConnection?
     
     private func reset() {
@@ -212,7 +213,7 @@ public class CocoaMQTTWebSocket: CocoaMQTTSocketProtocol {
     private func checkScheduledReads() {
         guard let theDelegate = delegate else { return }
         guard let delegateQueue = delegateQueue else { return }
-
+        
         readTimeoutTimer.reset()
         while (scheduledReads.first?.length ?? UInt.max) <= readBuffer.count {
             let nextRead = scheduledReads.removeFirst()
@@ -269,7 +270,7 @@ extension CocoaMQTTWebSocket: CocoaMQTTWebSocketConnectionDelegate {
             completionHandler(false)
         }
     }
-
+    
     public func connectionOpened(_ conn: CocoaMQTTWebSocketConnection) {
         guard conn.isEqual(connection) else { return }
         guard let delegate = delegate else { return }
@@ -278,17 +279,17 @@ extension CocoaMQTTWebSocket: CocoaMQTTWebSocketConnectionDelegate {
             delegate.socketConnected(self)
         }
     }
-
+    
     public func connectionClosed(_ conn: CocoaMQTTWebSocketConnection, withError error: Error?) {
         guard conn.isEqual(connection) else { return }
         closeConnection(withError: error)
     }
-
+    
     public func connection(_ conn: CocoaMQTTWebSocketConnection, receivedString string: String) {
         guard let data = string.data(using: .utf8) else { return }
         self.connection(conn, receivedData: data)
     }
-
+    
     public func connection(_ conn: CocoaMQTTWebSocketConnection, receivedData data: Data) {
         guard conn.isEqual(connection) else { return }
         readBuffer.append(data)
@@ -301,7 +302,7 @@ extension CocoaMQTTWebSocket: CocoaMQTTWebSocketConnectionDelegate {
 @available(OSX 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
 public extension CocoaMQTTWebSocket {
     class FoundationConnection: NSObject, CocoaMQTTWebSocketConnection {
-
+        
         public weak var delegate: CocoaMQTTWebSocketConnectionDelegate?
         public lazy var queue = DispatchQueue(label: "CocoaMQTTFoundationWebSocketConnection-\(self.hashValue)")
         
@@ -372,13 +373,13 @@ extension CocoaMQTTWebSocket.FoundationConnection: URLSessionWebSocketDelegate {
             }
         }
     }
-
+    
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         queue.async {
             self.delegate?.connectionOpened(self)
         }
     }
-
+    
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         queue.async {
             self.delegate?.connectionClosed(self, withError: CocoaMQTTError.FoundationConnection.closed(closeCode))
@@ -436,19 +437,19 @@ extension CocoaMQTTWebSocket.StarscreamConnection: SSLTrustValidator {
 }
 
 extension CocoaMQTTWebSocket.StarscreamConnection: WebSocketDelegate {
-
+    
     public func websocketDidConnect(socket: WebSocketClient) {
         delegate?.connectionOpened(self)
     }
-
+    
     public func websocketDidDisconnect(socket: WebSocketClient, error: Error?) {
         delegate?.connectionClosed(self, withError: error)
     }
-
+    
     public func websocketDidReceiveMessage(socket: WebSocketClient, text: String) {
         delegate?.connection(self, receivedString: text)
     }
-
+    
     public func websocketDidReceiveData(socket: WebSocketClient, data: Data) {
         delegate?.connection(self, receivedData: data)
     }
