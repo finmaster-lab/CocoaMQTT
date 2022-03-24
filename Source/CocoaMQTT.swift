@@ -567,8 +567,14 @@ extension CocoaMQTT: CocoaMQTTSocketDelegate {
             data.copyBytes(to: &bytes, count: 1)
             reader!.headerReady(bytes[0])
         case CocoaMQTTReadTag.length:
-            data.copyBytes(to: &bytes, count: 1)
-            reader!.lengthReady(bytes[0])
+            do{
+                data.copyBytes(to: &bytes, count: 1)
+                if(bytes.count > 0){
+                    reader!.lengthReady(bytes[0])
+                }
+            }catch{
+            }
+
         case CocoaMQTTReadTag.payload:
             reader!.payloadReady(data)
         }
