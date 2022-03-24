@@ -2,7 +2,7 @@ Pod::Spec.new do |s|
   s.name        = "CocoaMQTT"
   s.version     = "2.0.4"
   s.summary     = "MQTT v3.1.1 client library for iOS and OS X written with Swift 5"
-  s.homepage    = "https://github.com/emqx/CocoaMQTT"
+  s.homepage    = "https://github.com/finmaster-lab/CocoaMQTT"
   s.license     = { :type => "MIT" }
   s.authors     = { "Feng Lee" => "feng@emqtt.io", "CrazyWisdom" => "zh.whong@gmail.com", "Alex Yu" => "alexyu.dc@gmail.com", "Leeway" => "leeway1208@gmail.com"  }
 
@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = "9.0"
   s.tvos.deployment_target = "10.0"
   # s.watchos.deployment_target = "2.0"
-  s.source   = { :git => "https://github.com/emqx/CocoaMQTT.git", :tag => "2.0.3-beta3"}
+  s.source   = { :git => "https://github.com/finmaster-lab/CocoaMQTT.git", :tag => "2.0.4"}
   s.default_subspec = 'Core'
   
   s.subspec 'Core' do |ss|
