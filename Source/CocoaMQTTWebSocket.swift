@@ -131,7 +131,7 @@ public class CocoaMQTTWebSocket: CocoaMQTTSocketProtocol {
     
     public func write(_ data: Data, withTimeout timeout: TimeInterval, tag: Int) {
         internalQueue.async (flags: .barrier){
-                let newWrite = WriteItem(tag: tag, timeout: (timeout > 0.0) ? .now() + timeout : .distantFuture)
+                let newWrite = try? WriteItem(tag: tag, timeout: (timeout > 0.0) ? .now() + timeout : .distantFuture)
                if(newWrite.tag <= self.scheduledWrites.count){
                    self.scheduledWrites.insert(newWrite)
                }
