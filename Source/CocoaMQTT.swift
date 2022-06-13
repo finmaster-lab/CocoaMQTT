@@ -717,35 +717,29 @@ extension CocoaMQTT: CocoaMQTTReaderDelegate {
 
     func didReceive(_ reader: CocoaMQTTReader, suback: FrameSubAck) {
         printDebug("RECV: \(suback)")
-                
-        let contain = subscriptionsWaitingAck.keys.contains(suback.msgid) ? true : false
-
-        if (contain == false) {
-            return
-        }
-        guard let topicsAndQos = subscriptionsWaitingAck.removeValue(forKey: suback.msgid) else {
-            printWarning("UNEXPECT SUBACK Received: \(suback)")
-            return
-        }
-        
-        guard topicsAndQos.count == suback.grantedQos.count else {
-            printWarning("UNEXPECT SUBACK Recivied: \(suback)")
-            return
-        }
-        
-        let success: NSMutableDictionary = NSMutableDictionary()
-        var failed = [String]()
-        for (idx,(topic, _)) in topicsAndQos.enumerated() {
-            if suback.grantedQos[idx] != .FAILTURE {
-                subscriptions[topic] = suback.grantedQos[idx]
-                success[topic] = suback.grantedQos[idx].rawValue
-            } else {
-                failed.append(topic)
-            }
-        }
-
-        delegate?.mqtt(self, didSubscribeTopics: success, failed: failed)
-        didSubscribeTopics(self, success, failed)
+//        guard let topicsAndQos = subscriptionsWaitingAck.removeValue(forKey: suback.msgid) else {
+//            printWarning("UNEXPECT SUBACK Received: \(suback)")
+//            return
+//        }
+//
+//        guard topicsAndQos.count == suback.grantedQos.count else {
+//            printWarning("UNEXPECT SUBACK Recivied: \(suback)")
+//            return
+//        }
+//
+//        let success: NSMutableDictionary = NSMutableDictionary()
+//        var failed = [String]()
+//        for (idx,(topic, _)) in topicsAndQos.enumerated() {
+//            if suback.grantedQos[idx] != .FAILTURE {
+//                subscriptions[topic] = suback.grantedQos[idx]
+//                success[topic] = suback.grantedQos[idx].rawValue
+//            } else {
+//                failed.append(topic)
+//            }
+//        }
+//
+//        delegate?.mqtt(self, didSubscribeTopics: success, failed: failed)
+//        didSubscribeTopics(self, success, failed)
     }
     
     func didReceive(_ reader: CocoaMQTTReader, unsuback: FrameUnsubAck) {
