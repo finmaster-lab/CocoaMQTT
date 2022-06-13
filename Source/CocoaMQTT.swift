@@ -738,7 +738,7 @@ extension CocoaMQTT: CocoaMQTTReaderDelegate {
 //            }
 //        }
 //
-        delegate?.mqtt(self, [didSubscribeTopics]: success, failed: failed)
+        delegate?.mqtt(self, didSubscribeTopics: success, failed: failed)
         didSubscribeTopics(self, success, failed)
     }
     
