@@ -738,8 +738,8 @@ extension CocoaMQTT: CocoaMQTTReaderDelegate {
 //            }
 //        }
 //
-//        delegate?.mqtt(self, didSubscribeTopics: success, failed: failed)
-//        didSubscribeTopics(self, success, failed)
+        delegate?.mqtt(self, []: success, failed: failed)
+        didSubscribeTopics(self, success, failed)
     }
     
     func didReceive(_ reader: CocoaMQTTReader, unsuback: FrameUnsubAck) {
