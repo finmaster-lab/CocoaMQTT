@@ -717,6 +717,12 @@ extension CocoaMQTT: CocoaMQTTReaderDelegate {
 
     func didReceive(_ reader: CocoaMQTTReader, suback: FrameSubAck) {
         printDebug("RECV: \(suback)")
+                
+        let contain = subscriptionsWaitingAck.keys.contains(suback.msgid) ? true : false
+
+        if (contain == false) {
+            return
+        }
         guard let topicsAndQos = subscriptionsWaitingAck.removeValue(forKey: suback.msgid) else {
             printWarning("UNEXPECT SUBACK Received: \(suback)")
             return
